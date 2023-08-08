@@ -37,7 +37,18 @@ int init_words(WordCount **wclist) {
      Returns 0 if no errors are encountered
      in the body of this function; 1 otherwise.
   */
-  *wclist = NULL;
+
+  if (wclist == NULL) {
+    return 1;
+  }
+
+  if ((*wclist = malloc(sizeof(WordCount))) == NULL) {
+    return 1;
+  }
+  (*wclist)->next = NULL;
+  (*wclist)->word = NULL;
+  (*wclist)->count = 0;
+  // *wclist = NULL;
   return 0;
 }
 
@@ -47,12 +58,27 @@ ssize_t len_words(WordCount *wchead) {
      this function.
   */
     size_t len = 0;
+    while (wchead) {
+      len += wchead->count;
+      wchead = wchead->next;
+    }
     return len;
 }
 
 WordCount *find_word(WordCount *wchead, char *word) {
   /* Return count for word, if it exists */
   WordCount *wc = NULL;
+  WordCount *temp = wchead;
+
+  while (temp) {
+    if (strcmp(word, temp->word) == 0) {
+      wc = temp;
+      break;
+    } else {
+      temp = temp->next;
+    }
+  }
+
   return wc;
 }
 
@@ -61,6 +87,39 @@ int add_word(WordCount **wclist, char *word) {
      Otherwise insert with count 1.
      Returns 0 if no errors are encountered in the body of this function; 1 otherwise.
   */
+
+  if (wclist == NULL) {
+    return 1;
+  }
+  
+  WordCount *wc = NULL;
+
+  if ((*wclist)->count == 0) {  /* 链表长度为1,刚初始化 */
+    if (((*wclist)->word = new_string(word)) == NULL) {
+      return 1;
+    }
+
+    (*wclist)->count = 1;
+  }
+  else if ((wc = find_word(*wclist, word))) {
+    wc->count += 1;
+  } 
+  else {
+    wc = malloc(sizeof(WordCount));
+    if (!wc) {
+      return 1;
+    }
+
+    if ((wc->word = new_string(word)) == NULL) {
+      return 1;
+    }
+
+    wc->count = 1;
+
+    wc->next = *wclist;
+    *wclist = wc;
+  }
+
  return 0;
 }
 
